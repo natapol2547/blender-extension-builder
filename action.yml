@@ -76,7 +76,10 @@ runs:
 
     - name: Install helper dependencies
       shell: bash
-      run: uv pip install --system -r "${GITHUB_ACTION_PATH}/requirements.txt"
+      run: |
+        uv venv "${RUNNER_TEMP}/beb-venv"
+        uv pip install -p "${RUNNER_TEMP}/beb-venv" -r "${GITHUB_ACTION_PATH}/requirements.txt"
+        echo "BEB_PYTHON=${RUNNER_TEMP}/beb-venv/bin/python" >> "${GITHUB_ENV}"
 
     - name: Install Blender system libraries
       if: inputs.install-system-deps == 'true'
@@ -92,7 +95,7 @@ runs:
       shell: bash
       env:
         REQUESTED: ${{ inputs.blender-version }}
-      run: python3 "${GITHUB_ACTION_PATH}/scripts/resolve_blender.py" --requested "${REQUESTED}"
+      run: '"${BEB_PYTHON}" "${GITHUB_ACTION_PATH}/scripts/resolve_blender.py" --requested "${REQUESTED}"'
 
     - name: Cache Blender
       uses: actions/cache@v4
@@ -104,7 +107,7 @@ runs:
       id: blender
       shell: bash
       run: >-
-        python3 "${GITHUB_ACTION_PATH}/scripts/download_blender.py"
+        "${BEB_PYTHON}" "${GITHUB_ACTION_PATH}/scripts/download_blender.py"
         --url "${{ steps.resolve.outputs.url }}"
         --dest "${HOME}/.blender-portable/${{ steps.resolve.outputs.version }}"
 
@@ -113,7 +116,7 @@ runs:
       shell: bash
       env:
         SOURCE_DIR: ${{ inputs.source-dir }}
-      run: python3 "${GITHUB_ACTION_PATH}/scripts/read_manifest.py" --source-dir "${SOURCE_DIR}"
+      run: '"${BEB_PYTHON}" "${GITHUB_ACTION_PATH}/scripts/read_manifest.py" --source-dir "${SOURCE_DIR}"'
 
     - name: Build extension
       id: build
@@ -149,7 +152,7 @@ runs:
         if [ "${STRICT}" = "true" ]; then
           args+=(--strict)
         fi
-        python3 "${GITHUB_ACTION_PATH}/validator/main.py" "${args[@]}"
+        "${BEB_PYTHON}" "${GITHUB_ACTION_PATH}/validator/main.py" "${args[@]}"
 
     - name: Upload build artifact
       if: inputs.upload-artifact == 'true'
