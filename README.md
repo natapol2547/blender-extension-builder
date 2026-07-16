@@ -23,7 +23,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: write   # needed to create the draft release
+  contents: write # needed to create the draft release
 
 jobs:
   build:
@@ -31,9 +31,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: your-org/blender-extension-builder@main
+      - uses: natapol2547/blender-extension-builder@main
         with:
-          source-dir: '.'   # directory containing blender_manifest.toml
+          source-dir: "." # directory containing blender_manifest.toml
 ```
 
 Pushing a manifest with `version = "1.2.3"` produces a draft release tagged `v1.2.3` with
@@ -42,27 +42,27 @@ Pushing a manifest with `version = "1.2.3"` produces a draft release tagged `v1.
 
 ## Inputs
 
-| Input | Default | Description |
-|---|---|---|
-| `source-dir` | `.` | Add-on root (the directory containing `blender_manifest.toml`). |
-| `output-dir` | *(temp dir)* | Where the built `.zip` is written. |
-| `blender-version` | `latest` | `latest` or an explicit release like `4.5.3`. |
-| `validate` | `true` | Run the bundled validator on the built `.zip`; failure blocks the release. |
-| `strict` | `false` | Treat validator WARN findings as failures too. |
-| `create-release` | `true` | Create a draft GitHub release tagged with the add-on version. |
-| `tag-prefix` | `v` | Release tag = prefix + manifest version (e.g. `v1.2.3`). |
-| `github-token` | `${{ github.token }}` | Token used for the release. Needs `contents: write`. |
-| `upload-artifact` | `true` | Also upload the `.zip` + validation report as a workflow artifact. |
-| `install-system-deps` | `true` | `apt-get install` the X11/GL libraries headless Blender needs. |
+| Input                 | Default               | Description                                                                |
+| --------------------- | --------------------- | -------------------------------------------------------------------------- |
+| `source-dir`          | `.`                   | Add-on root (the directory containing `blender_manifest.toml`).            |
+| `output-dir`          | _(temp dir)_          | Where the built `.zip` is written.                                         |
+| `blender-version`     | `latest`              | `latest` or an explicit release like `4.5.3`.                              |
+| `validate`            | `true`                | Run the bundled validator on the built `.zip`; failure blocks the release. |
+| `strict`              | `false`               | Treat validator WARN findings as failures too.                             |
+| `create-release`      | `true`                | Create a draft GitHub release tagged with the add-on version.              |
+| `tag-prefix`          | `v`                   | Release tag = prefix + manifest version (e.g. `v1.2.3`).                   |
+| `github-token`        | `${{ github.token }}` | Token used for the release. Needs `contents: write`.                       |
+| `upload-artifact`     | `true`                | Also upload the `.zip` + validation report as a workflow artifact.         |
+| `install-system-deps` | `true`                | `apt-get install` the X11/GL libraries headless Blender needs.             |
 
 ## Outputs
 
-| Output | Description |
-|---|---|
-| `zip-path` | Path to the built extension `.zip`. |
-| `addon-id` / `addon-version` | From `blender_manifest.toml`. |
-| `blender-version` | The Blender release actually used. |
-| `release-url` | URL of the draft release (empty when `create-release: false`). |
+| Output                       | Description                                                    |
+| ---------------------------- | -------------------------------------------------------------- |
+| `zip-path`                   | Path to the built extension `.zip`.                            |
+| `addon-id` / `addon-version` | From `blender_manifest.toml`.                                  |
+| `blender-version`            | The Blender release actually used.                             |
+| `release-url`                | URL of the draft release (empty when `create-release: false`). |
 
 ## What the validator checks
 
@@ -84,19 +84,19 @@ but soften nothing with the default non-strict mode.
 Pin a Blender version and validate strictly:
 
 ```yaml
-- uses: your-org/blender-extension-builder@main
+- uses: natapol2547/blender-extension-builder@main
   with:
-    blender-version: '4.5.3'
-    strict: 'true'
+    blender-version: "4.5.3"
+    strict: "true"
 ```
 
 Build only (no validation, no release) — e.g. for pull requests:
 
 ```yaml
-- uses: your-org/blender-extension-builder@main
+- uses: natapol2547/blender-extension-builder@main
   with:
-    validate: 'false'
-    create-release: 'false'
+    validate: "false"
+    create-release: "false"
 ```
 
 ## Repository layout
