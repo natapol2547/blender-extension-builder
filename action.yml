@@ -1,8 +1,7 @@
 name: 'Blender Extension Builder'
 description: >-
-  Build a Blender add-on into an extension .zip with a downloaded Blender release,
-  validate it against moderator code-quality rules, and draft a GitHub release
-  tagged with the add-on version.
+  Build and validate a Blender add-on into an extension .zip
+  then draft a GitHub release tagged with the add-on version.
 author: 'blender-extension-builder'
 branding:
   icon: 'box'
