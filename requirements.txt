@@ -1,0 +1,3 @@
+# Helper-script dependencies, installed in the action via `uv pip install`.
+# The vendored validator itself is stdlib-only and needs nothing from here.
+requests>=2.32

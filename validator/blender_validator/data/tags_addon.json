@@ -1,0 +1,40 @@
+{
+  "_provenance": {
+    "source": "https://docs.blender.org/manual/en/dev/advanced/extensions/tags.html",
+    "verified": "2026-07-11",
+    "note": "Add-on tag allowlist. The docs page is Cloudflare-gated; this list was verified during research and must be re-checked periodically as Blender adds tags."
+  },
+  "tags": [
+    "3D View",
+    "Add Curve",
+    "Add Mesh",
+    "Animation",
+    "Bake",
+    "Camera",
+    "Compositing",
+    "Development",
+    "Game Engine",
+    "Geometry Nodes",
+    "Grease Pencil",
+    "Import-Export",
+    "Lighting",
+    "Material",
+    "Mesh",
+    "Modeling",
+    "Node",
+    "Object",
+    "Paint",
+    "Physics",
+    "Pipeline",
+    "Render",
+    "Rigging",
+    "Scene",
+    "Sculpt",
+    "Sequencer",
+    "System",
+    "Text Editor",
+    "Tracking",
+    "User Interface",
+    "UV"
+  ]
+}

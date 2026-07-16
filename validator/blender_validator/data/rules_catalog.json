@@ -1,0 +1,520 @@
+[
+  {
+    "id": "manifest.present",
+    "severity": "ERROR",
+    "title": "Manifest file exists at the add-on root",
+    "source": "extension validate",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.parseable",
+    "severity": "ERROR",
+    "title": "Manifest is valid TOML",
+    "source": "extension validate",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.schema_version",
+    "severity": "ERROR",
+    "title": "schema_version present and supported",
+    "source": "extension validate",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.required_fields",
+    "severity": "ERROR",
+    "title": "All required manifest fields are present",
+    "source": "manifest rules",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.id_format",
+    "severity": "ERROR",
+    "title": "id is lowercase and identifier-safe",
+    "source": "manifest rules",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.type_valid",
+    "severity": "ERROR",
+    "title": "type is 'add-on' or 'theme'",
+    "source": "manifest rules",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.version_semver",
+    "severity": "ERROR",
+    "title": "version is MAJOR.MINOR.PATCH",
+    "source": "manifest rules",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.blender_version_min",
+    "severity": "ERROR",
+    "title": "blender_version_min is valid and >= 4.2.0",
+    "source": "extensions require 4.2+",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.blender_version_order",
+    "severity": "WARN",
+    "title": "blender_version_min < blender_version_max",
+    "source": "manifest rules",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.license_present",
+    "severity": "ERROR",
+    "title": "license is a non-empty list",
+    "source": "license rule",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.license_spdx_prefix",
+    "severity": "ERROR",
+    "title": "Each license uses the 'SPDX:' prefix",
+    "source": "extension validate",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.license_spdx_valid",
+    "severity": "ERROR",
+    "title": "License identifiers are recognized SPDX ids",
+    "source": "SPDX list",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.license_policy",
+    "severity": "ERROR",
+    "title": "License meets Blender policy (add-ons: GPL-3.0-or-later)",
+    "source": "extension licenses policy",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.tagline_length",
+    "severity": "ERROR",
+    "title": "tagline is at most 64 characters",
+    "source": "tagline rule",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.tagline_no_trailing_period",
+    "severity": "WARN",
+    "title": "tagline has no trailing period",
+    "source": "tagline rule",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.tagline_redundant",
+    "severity": "WARN",
+    "title": "tagline avoids redundant words (add-on/Blender/name)",
+    "source": "guideline nicety",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.name_no_trademark",
+    "severity": "ERROR",
+    "title": "Name does not use the 'Blender' trademark",
+    "source": "trademark rule (moderator review)",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.name_special_chars",
+    "severity": "WARN",
+    "title": "Name avoids emoji / symbols / control characters",
+    "source": "listing rendering (moderator review)",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.no_commented_out_fields",
+    "severity": "WARN",
+    "title": "Manifest has no commented-out fields",
+    "source": "manifest readability (moderator review)",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.tags_present",
+    "severity": "WARN",
+    "title": "At least one tag is set",
+    "source": "tags rule",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.tags_allowed",
+    "severity": "ERROR",
+    "title": "Tags are from the allowed per-type list",
+    "source": "tags allowlist",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.permission_keys_valid",
+    "severity": "ERROR",
+    "title": "Permission keys are recognized",
+    "source": "permissions rule",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.permissions_have_reason",
+    "severity": "ERROR",
+    "title": "Each permission states a reason",
+    "source": "permissions rule",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.permission_reason_style",
+    "severity": "WARN",
+    "title": "Permission reasons are short single sentences without a trailing period",
+    "source": "permissions rule",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.copyright_when_required",
+    "severity": "WARN",
+    "title": "copyright present for attribution-requiring licenses",
+    "source": "license rule",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.website_present",
+    "severity": "WARN",
+    "title": "A support / report-issues URL is provided",
+    "source": "moderator review (report-issues link)",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.website_url_valid",
+    "severity": "WARN",
+    "title": "website is a valid http(s) URL",
+    "source": "manifest rules",
+    "kind": "static"
+  },
+  {
+    "id": "manifest.wheels_declared_exist",
+    "severity": "ERROR",
+    "title": "Declared wheels exist in the package",
+    "source": "wheels rule",
+    "kind": "static"
+  },
+  {
+    "id": "consistency.blinfo_version_matches",
+    "severity": "ERROR",
+    "title": "bl_info version matches the manifest version",
+    "source": "correctness",
+    "kind": "static"
+  },
+  {
+    "id": "consistency.blinfo_redundant",
+    "severity": "WARN",
+    "title": "bl_info is not needed in an extension",
+    "source": "guideline",
+    "kind": "static"
+  },
+  {
+    "id": "consistency.blinfo_blender_matches",
+    "severity": "WARN",
+    "title": "bl_info blender version matches blender_version_min",
+    "source": "consistency",
+    "kind": "static"
+  },
+  {
+    "id": "consistency.name_matches",
+    "severity": "WARN",
+    "title": "bl_info name matches the manifest name",
+    "source": "consistency",
+    "kind": "static"
+  },
+  {
+    "id": "consistency.license_file_present",
+    "severity": "WARN",
+    "title": "A license text file matching the SPDX id is bundled",
+    "source": "license file rule",
+    "kind": "static"
+  },
+  {
+    "id": "py.parse_error",
+    "severity": "ERROR",
+    "title": "Every Python file parses without a syntax error",
+    "source": "code quality",
+    "kind": "static"
+  },
+  {
+    "id": "py.no_eval_exec",
+    "severity": "ERROR",
+    "title": "No eval / exec / compile",
+    "source": "code quality / security",
+    "kind": "static"
+  },
+  {
+    "id": "py.no_runtime_pip",
+    "severity": "ERROR",
+    "title": "No runtime install of Python packages",
+    "source": "no runtime install",
+    "kind": "static"
+  },
+  {
+    "id": "py.no_addon_manipulation",
+    "severity": "ERROR",
+    "title": "Does not install/enable/remove other add-ons",
+    "source": "don't modify other add-ons",
+    "kind": "static"
+  },
+  {
+    "id": "py.no_backslash_path_sep",
+    "severity": "ERROR",
+    "title": "No backslash path separators (breaks Linux/macOS)",
+    "source": "cross-platform paths",
+    "kind": "static"
+  },
+  {
+    "id": "py.no_write_install_dir",
+    "severity": "ERROR",
+    "title": "Does not write into the add-on install directory",
+    "source": "read-only install dir",
+    "kind": "static"
+  },
+  {
+    "id": "py.no_network_without_guard",
+    "severity": "WARN",
+    "title": "Network access checks bpy.app.online_access",
+    "source": "online_access rule",
+    "kind": "static"
+  },
+  {
+    "id": "py.no_hardcoded_abs_path",
+    "severity": "WARN",
+    "title": "No hardcoded absolute filesystem paths",
+    "source": "cross-platform",
+    "kind": "static"
+  },
+  {
+    "id": "py.no_wildcard_import",
+    "severity": "WARN",
+    "title": "No 'from x import *'",
+    "source": "code quality",
+    "kind": "static"
+  },
+  {
+    "id": "py.no_bare_except",
+    "severity": "WARN",
+    "title": "No silently-swallowed broad exceptions",
+    "source": "code quality",
+    "kind": "static"
+  },
+  {
+    "id": "py.no_print",
+    "severity": "WARN",
+    "title": "No leftover print() debugging",
+    "source": "code quality",
+    "kind": "static"
+  },
+  {
+    "id": "py.no_module_side_effects",
+    "severity": "WARN",
+    "title": "No side-effecting calls at import time",
+    "source": "import side-effects",
+    "kind": "static"
+  },
+  {
+    "id": "py.no_auto_updater",
+    "severity": "WARN",
+    "title": "No self-updater (updates go through the platform)",
+    "source": "no auto-updater",
+    "kind": "static"
+  },
+  {
+    "id": "py.register_unregister_present",
+    "severity": "WARN",
+    "title": "Top-level module defines register()/unregister()",
+    "source": "structure",
+    "kind": "static"
+  },
+  {
+    "id": "py.no_deprecated_module",
+    "severity": "ERROR",
+    "title": "No imports of modules removed from modern Blender (bgl)",
+    "source": "bgl removal (4.x)",
+    "kind": "static"
+  },
+  {
+    "id": "py.no_winreg",
+    "severity": "ERROR",
+    "title": "No Windows-registry access via winreg",
+    "source": "cross-platform (moderator review)",
+    "kind": "static"
+  },
+  {
+    "id": "py.no_os_startfile",
+    "severity": "WARN",
+    "title": "No os.startfile (Windows-only)",
+    "source": "cross-platform (moderator review)",
+    "kind": "static"
+  },
+  {
+    "id": "py.no_threading",
+    "severity": "ERROR",
+    "title": "No threading/queue modules (known Blender crashers)",
+    "source": "moderator review (threading)",
+    "kind": "static"
+  },
+  {
+    "id": "py.no_sys_manipulation",
+    "severity": "ERROR",
+    "title": "Does not manipulate sys.path / sys.modules",
+    "source": "don't modify the Python environment",
+    "kind": "static"
+  },
+  {
+    "id": "py.no_module_reload",
+    "severity": "WARN",
+    "title": "No custom module reloading",
+    "source": "no custom reload (moderator review)",
+    "kind": "static"
+  },
+  {
+    "id": "py.no_main_guard",
+    "severity": "WARN",
+    "title": "No standalone-script __main__ blocks",
+    "source": "no standalone execution (moderator review)",
+    "kind": "static"
+  },
+  {
+    "id": "py.no_blf_unload_in_unregister",
+    "severity": "ERROR",
+    "title": "No blf.unload() while unregistering",
+    "source": "font unload crash (moderator review)",
+    "kind": "static"
+  },
+  {
+    "id": "py.preferences_use_package",
+    "severity": "WARN",
+    "title": "Preferences are keyed by __package__, not __name__",
+    "source": "__package__ rule (moderator review)",
+    "kind": "static"
+  },
+  {
+    "id": "py.no_stray_properties",
+    "severity": "WARN",
+    "title": "No stray scalar properties on bpy.types IDs",
+    "source": "use PropertyGroup (moderator review)",
+    "kind": "static"
+  },
+  {
+    "id": "py.no_native_op_wrapper",
+    "severity": "WARN",
+    "title": "No operators that merely wrap a native bpy.ops call",
+    "source": "redundant operator (moderator review)",
+    "kind": "static"
+  },
+  {
+    "id": "py.no_keymap_operator",
+    "severity": "WARN",
+    "title": "No operators that add/remove keymaps",
+    "source": "keymaps belong to the user (moderator review)",
+    "kind": "static"
+  },
+  {
+    "id": "py.no_operator_in_handler",
+    "severity": "WARN",
+    "title": "No operators started from persistent handlers",
+    "source": "manual initialization (moderator review)",
+    "kind": "static"
+  },
+  {
+    "id": "py.no_promo_links",
+    "severity": "WARN",
+    "title": "No store/donation/social links in code",
+    "source": "no ads in the Blender UI (ToS)",
+    "kind": "static"
+  },
+  {
+    "id": "pkg.no_pycache",
+    "severity": "ERROR",
+    "title": "No __pycache__ or compiled Python is shipped",
+    "source": "packaging",
+    "kind": "static"
+  },
+  {
+    "id": "pkg.no_vcs_dirs",
+    "severity": "WARN",
+    "title": "No version-control directories are shipped",
+    "source": "packaging",
+    "kind": "static"
+  },
+  {
+    "id": "pkg.no_dev_files",
+    "severity": "WARN",
+    "title": "No development-only files are shipped",
+    "source": "packaging",
+    "kind": "static"
+  },
+  {
+    "id": "pkg.no_gif",
+    "severity": "WARN",
+    "title": "No .gif assets (they bloat the listing)",
+    "source": "no heavy gifs",
+    "kind": "static"
+  },
+  {
+    "id": "pkg.heavy_asset",
+    "severity": "WARN",
+    "title": "No single asset larger than 1 MB",
+    "source": "listing bloat",
+    "kind": "static"
+  },
+  {
+    "id": "pkg.total_binary_payload",
+    "severity": "WARN",
+    "title": "Total non-code payload under 5 MB",
+    "source": "listing bloat",
+    "kind": "static"
+  },
+  {
+    "id": "pkg.no_backslash_in_names",
+    "severity": "WARN",
+    "title": "No file/dir names contain a backslash",
+    "source": "cross-platform",
+    "kind": "static"
+  },
+  {
+    "id": "pkg.structure_sane",
+    "severity": "WARN",
+    "title": "Manifest at root with a Python entry point",
+    "source": "structure",
+    "kind": "static"
+  },
+  {
+    "id": "pkg.platform_wheels_consistency",
+    "severity": "WARN",
+    "title": "platforms and wheels declarations line up",
+    "source": "platform builds (moderator review)",
+    "kind": "static"
+  },
+  {
+    "id": "pkg.no_bundled_wheels",
+    "severity": "WARN",
+    "title": "No wheels for packages Blender already bundles",
+    "source": "bundled wheels (moderator review)",
+    "kind": "static"
+  },
+  {
+    "id": "pkg.no_compiled_libs",
+    "severity": "ERROR",
+    "title": "No loose compiled libraries or native sources",
+    "source": "self-contained Python only (moderator review)",
+    "kind": "static"
+  },
+  {
+    "id": "rt.extension_validate",
+    "severity": "ERROR",
+    "title": "`blender --command extension validate` passes",
+    "source": "official validator",
+    "kind": "runtime"
+  },
+  {
+    "id": "rt.build",
+    "severity": "WARN",
+    "title": "`blender --command extension build` succeeds",
+    "source": "official builder",
+    "kind": "runtime"
+  }
+]

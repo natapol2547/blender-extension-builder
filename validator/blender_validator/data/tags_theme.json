@@ -1,0 +1,16 @@
+{
+  "_provenance": {
+    "source": "https://docs.blender.org/manual/en/dev/advanced/extensions/tags.html",
+    "verified": "2026-07-11",
+    "note": "Theme tag allowlist. Less certain than the add-on list (source is Cloudflare-gated); therefore tag validation is WARN (not ERROR) for type=theme."
+  },
+  "tags": [
+    "Accessibility",
+    "Colorful",
+    "Dark",
+    "High Contrast",
+    "Inspired By",
+    "Light",
+    "Print"
+  ]
+}
