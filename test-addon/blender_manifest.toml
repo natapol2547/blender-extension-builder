@@ -1,0 +1,15 @@
+schema_version = "1.0.0"
+
+id = "builder_test_addon"
+version = "0.1.0"
+name = "Builder Test"
+tagline = "Fixture used to exercise the extension builder in CI"
+maintainer = "blender-extension-builder <contact@findmy3d.com>"
+type = "add-on"
+website = "https://github.com/blender-extension-builder"
+tags = ["Development"]
+
+blender_version_min = "4.2.0"
+
+license = ["SPDX:GPL-3.0-or-later"]
+copyright = ["2026 blender-extension-builder contributors"]
