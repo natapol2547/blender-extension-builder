@@ -1,0 +1,187 @@
+name: 'Blender Extension Builder'
+description: >-
+  Build a Blender add-on into an extension .zip with a downloaded Blender release,
+  validate it against moderator code-quality rules, and draft a GitHub release
+  tagged with the add-on version.
+author: 'blender-extension-builder'
+branding:
+  icon: 'box'
+  color: 'orange'
+
+inputs:
+  source-dir:
+    description: 'Directory containing blender_manifest.toml (the add-on root).'
+    required: false
+    default: '.'
+  output-dir:
+    description: 'Where the built .zip is written. Defaults to a temp directory outside the source tree.'
+    required: false
+    default: ''
+  blender-version:
+    description: "Blender release to build with: 'latest' or an explicit MAJOR.MINOR.PATCH (e.g. 4.5.3)."
+    required: false
+    default: 'latest'
+  validate:
+    description: 'Run the bundled extension validator on the built .zip; a failure blocks the release.'
+    required: false
+    default: 'true'
+  strict:
+    description: 'Treat validator WARN findings as failures too.'
+    required: false
+    default: 'false'
+  create-release:
+    description: 'Create a draft GitHub release with the built .zip, tagged with the add-on version.'
+    required: false
+    default: 'true'
+  tag-prefix:
+    description: "Prefix for the release tag (tag = prefix + manifest version, e.g. 'v1.2.3')."
+    required: false
+    default: 'v'
+  github-token:
+    description: 'Token used to create the draft release. Needs contents: write.'
+    required: false
+    default: ${{ github.token }}
+  upload-artifact:
+    description: 'Also upload the built .zip (and validation report) as a workflow artifact.'
+    required: false
+    default: 'true'
+  install-system-deps:
+    description: 'apt-get install the X11/GL libraries Blender needs on a headless runner.'
+    required: false
+    default: 'true'
+
+outputs:
+  zip-path:
+    description: 'Path to the built extension .zip.'
+    value: ${{ steps.build.outputs.zip-path }}
+  addon-id:
+    description: 'Add-on id from blender_manifest.toml.'
+    value: ${{ steps.manifest.outputs.id }}
+  addon-version:
+    description: 'Add-on version from blender_manifest.toml.'
+    value: ${{ steps.manifest.outputs.version }}
+  blender-version:
+    description: 'Blender version the extension was built with.'
+    value: ${{ steps.resolve.outputs.version }}
+  release-url:
+    description: 'URL of the draft release (empty when create-release is false).'
+    value: ${{ steps.release.outputs.url }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@v8.3.2
+      with:
+        enable-cache: true
+
+    - name: Install helper dependencies
+      shell: bash
+      run: uv pip install --system -r "${GITHUB_ACTION_PATH}/requirements.txt"
+
+    - name: Install Blender system libraries
+      if: inputs.install-system-deps == 'true'
+      shell: bash
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y -qq --no-install-recommends \
+          libx11-6 libxi6 libxxf86vm1 libxfixes3 libxrender1 libgl1 libegl1 \
+          libxkbcommon0 libsm6 libice6 libxext6 xz-utils
+
+    - name: Resolve Blender release
+      id: resolve
+      shell: bash
+      env:
+        REQUESTED: ${{ inputs.blender-version }}
+      run: python3 "${GITHUB_ACTION_PATH}/scripts/resolve_blender.py" --requested "${REQUESTED}"
+
+    - name: Cache Blender
+      uses: actions/cache@v4
+      with:
+        path: ~/.blender-portable
+        key: blender-${{ steps.resolve.outputs.version }}-linux-x64
+
+    - name: Download Blender
+      id: blender
+      shell: bash
+      run: >-
+        python3 "${GITHUB_ACTION_PATH}/scripts/download_blender.py"
+        --url "${{ steps.resolve.outputs.url }}"
+        --dest "${HOME}/.blender-portable/${{ steps.resolve.outputs.version }}"
+
+    - name: Read add-on manifest
+      id: manifest
+      shell: bash
+      env:
+        SOURCE_DIR: ${{ inputs.source-dir }}
+      run: python3 "${GITHUB_ACTION_PATH}/scripts/read_manifest.py" --source-dir "${SOURCE_DIR}"
+
+    - name: Build extension
+      id: build
+      shell: bash
+      env:
+        BLENDER: ${{ steps.blender.outputs.executable }}
+        SOURCE_DIR: ${{ inputs.source-dir }}
+        OUTPUT_DIR: ${{ inputs.output-dir }}
+      run: |
+        OUT="${OUTPUT_DIR:-${RUNNER_TEMP}/blender-extension-build}"
+        mkdir -p "${OUT}"
+        "${BLENDER}" --command extension build --source-dir "${SOURCE_DIR}" --output-dir "${OUT}"
+        shopt -s nullglob
+        zips=("${OUT}"/*.zip)
+        if [ "${#zips[@]}" -eq 0 ]; then
+          echo "::error::extension build produced no .zip in ${OUT}" >&2
+          exit 1
+        fi
+        echo "zip-path=${zips[0]}" >> "${GITHUB_OUTPUT}"
+        echo "output-dir=${OUT}" >> "${GITHUB_OUTPUT}"
+        echo "Built ${zips[0]}"
+
+    - name: Validate extension
+      if: inputs.validate == 'true'
+      shell: bash
+      env:
+        BLENDER: ${{ steps.blender.outputs.executable }}
+        ZIP_PATH: ${{ steps.build.outputs.zip-path }}
+        REPORT: ${{ steps.build.outputs.output-dir }}/validation-report.json
+        STRICT: ${{ inputs.strict }}
+      run: |
+        args=(--addon-path "${ZIP_PATH}" --blender "${BLENDER}" --report "${REPORT}")
+        if [ "${STRICT}" = "true" ]; then
+          args+=(--strict)
+        fi
+        python3 "${GITHUB_ACTION_PATH}/validator/main.py" "${args[@]}"
+
+    - name: Upload build artifact
+      if: inputs.upload-artifact == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ steps.manifest.outputs.id }}-${{ steps.manifest.outputs.version }}
+        path: ${{ steps.build.outputs.output-dir }}
+        if-no-files-found: error
+
+    - name: Create draft release
+      id: release
+      if: inputs.create-release == 'true'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        ZIP_PATH: ${{ steps.build.outputs.zip-path }}
+        ADDON_NAME: ${{ steps.manifest.outputs.name }}
+        ADDON_VERSION: ${{ steps.manifest.outputs.version }}
+        TAG_PREFIX: ${{ inputs.tag-prefix }}
+        BLENDER_VERSION: ${{ steps.resolve.outputs.version }}
+      run: |
+        TAG="${TAG_PREFIX}${ADDON_VERSION}"
+        if gh release view "${TAG}" --repo "${GITHUB_REPOSITORY}" > /dev/null 2>&1; then
+          echo "::error::release ${TAG} already exists — bump the version in blender_manifest.toml" >&2
+          exit 1
+        fi
+        URL="$(gh release create "${TAG}" "${ZIP_PATH}" \
+          --repo "${GITHUB_REPOSITORY}" \
+          --target "${GITHUB_SHA}" \
+          --draft \
+          --title "${ADDON_NAME} ${ADDON_VERSION}" \
+          --notes "Built with Blender ${BLENDER_VERSION} by blender-extension-builder.")"
+        echo "url=${URL}" >> "${GITHUB_OUTPUT}"
+        echo "Draft release created: ${URL}"
