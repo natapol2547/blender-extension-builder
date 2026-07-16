@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-test-addon:
+    name: Build + validate the fixture add-on
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run the action on the bundled fixture
+        id: build
+        uses: ./
+        with:
+          source-dir: test-addon
+          strict: 'true'
+          create-release: 'false'
+          upload-artifact: 'true'
+
+      - name: Check outputs
+        run: |
+          echo "zip:     ${{ steps.build.outputs.zip-path }}"
+          echo "addon:   ${{ steps.build.outputs.addon-id }} ${{ steps.build.outputs.addon-version }}"
+          echo "blender: ${{ steps.build.outputs.blender-version }}"
+          test -f "${{ steps.build.outputs.zip-path }}"
+          test "${{ steps.build.outputs.addon-id }}" = "builder_test_addon"
+
+  validation-disabled:
+    name: Build with validation disabled
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./
+        with:
+          source-dir: test-addon
+          validate: 'false'
+          create-release: 'false'
+          upload-artifact: 'false'
