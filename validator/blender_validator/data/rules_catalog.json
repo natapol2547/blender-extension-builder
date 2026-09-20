@@ -422,7 +422,7 @@
   {
     "id": "py.no_promo_links",
     "severity": "WARN",
-    "title": "No store/donation/social links in code",
+    "title": "No store/donation/social links in the UI",
     "source": "no ads in the Blender UI (ToS)",
     "kind": "static"
   },

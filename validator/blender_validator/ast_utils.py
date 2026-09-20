@@ -105,6 +105,21 @@ def _is_docstring(stmt: ast.stmt) -> bool:
     )
 
 
+def docstring_constant_ids(tree: ast.AST) -> Set[int]:
+    """``id()`` of every module/class/function docstring node in the tree.
+
+    Checks that look for suspicious string *values* use this to skip documentation:
+    a docstring is never shown to the user, so it is prose, not data.
+    """
+    ids: Set[int] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+            body = getattr(node, "body", [])
+            if body and _is_docstring(body[0]):
+                ids.add(id(body[0].value))
+    return ids
+
+
 def references_name(tree: ast.AST, needles: Set[str]) -> bool:
     """True if any attribute/name in the tree matches one of ``needles`` (dotted or bare)."""
     for node in ast.walk(tree):

@@ -9,11 +9,12 @@ from __future__ import annotations
 
 import ast
 import re
-from typing import List
+from typing import Dict, List
 
 from ..ast_utils import (
     bare_except_handlers,
     call_name,
+    docstring_constant_ids,
     dotted_name,
     imported_modules,
     iter_calls,
@@ -266,6 +267,11 @@ PROMO_DOMAINS = (
     "gumroad.com", "blendermarket.com", "patreon.com", "ko-fi.com", "buymeacoffee.com",
     "discord.gg", "twitter.com", "x.com/", "instagram.com", "facebook.com",
 )
+# What counts as "the UI" for py.no_promo_links (see _ui_string_scopes).
+UI_DRAW_FUNC_RE = re.compile(r"^draw(?:_|$)")
+URL_OPEN_RE = re.compile(r"(?:^|\.)url_open(?:_preset)?$")
+UI_KEYWORDS = {"text", "text_ctxt", "description", "url", "tooltip", "heading", "name", "items"}
+UI_ATTRS = {"bl_label", "bl_description", "bl_info", "url", "text", "description", "tooltip"}
 
 
 def _iter_imports(tree):
@@ -508,13 +514,79 @@ def no_operator_in_handler(ctx) -> List[Finding]:
     return findings
 
 
-@check("py.no_promo_links", W, "No store/donation/social links in code", "no ads in the Blender UI (ToS)")
+def _promo_hits(value: str) -> List[str]:
+    lowered = value.lower()
+    return sorted({d for d in PROMO_DOMAINS if d in lowered})
+
+
+def _ui_string_scopes(tree: ast.AST):
+    """Yield subtrees whose string literals can end up on screen.
+
+    The ToS rule is about ads *in the Blender UI*, not about mentioning a store
+    anywhere in the source, so only these count:
+
+    * ``draw*()`` bodies -- panel/menu/header/node drawing, incl. ``draw_callback_px``
+    * ``wm.url_open()`` calls -- the link a button actually opens
+    * ``bl_label`` / ``bl_description`` and friends -- class metadata Blender renders
+    * UI-facing keyword arguments (``text=``, ``description=``, ``url=``, ...)
+
+    Anything else (comments, docstrings, attribution constants, log messages) is
+    invisible to the user and is left alone.
+    """
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and UI_DRAW_FUNC_RE.match(node.name):
+            yield node
+        elif isinstance(node, ast.Call):
+            name = call_name(node)
+            if name and URL_OPEN_RE.search(name):
+                yield node
+            for kw in node.keywords:
+                if kw.arg in UI_KEYWORDS:
+                    yield kw.value
+        elif isinstance(node, (ast.Assign, ast.AnnAssign)):
+            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+            names = [dotted_name(t) or "" for t in targets]
+            if node.value is not None and any(n.split(".")[-1] in UI_ATTRS for n in names):
+                yield node.value
+
+
+def _module_string_constants(tree: ast.AST) -> Dict[str, ast.Constant]:
+    """``NAME = "literal"`` assignments, by name.
+
+    Lets the UI-scoped scan follow ``props.url = DONATE_URL`` back to the literal it was
+    defined from, which is where add-ons normally keep such a link.
+    """
+    consts: Dict[str, ast.Constant] = {}
+    for node in ast.walk(tree):
+        value = node.value if isinstance(node, (ast.Assign, ast.AnnAssign)) else None
+        if not isinstance(value, ast.Constant) or not isinstance(value.value, str):
+            continue
+        targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+        for target in targets:
+            if isinstance(target, ast.Name):
+                consts[target.id] = value
+    return consts
+
+
+@check("py.no_promo_links", W, "No store/donation/social links in the UI", "no ads in the Blender UI (ToS)")
 def no_promo_links(ctx) -> List[Finding]:
     findings: List[Finding] = []
     for mod in _iter_trees(ctx):
-        for const in iter_str_constants(mod.tree):
-            lowered = const.value.lower()
-            hits = sorted({d for d in PROMO_DOMAINS if d in lowered})
-            if hits:
-                findings.append(Finding("py.no_promo_links", W, f"promotional/social link ({', '.join(hits)}) - ads and social links are not allowed in the Blender UI (heuristic)", path=mod.rel, line=const.lineno))
+        module_consts = _module_string_constants(mod.tree)
+        docstrings = docstring_constant_ids(mod.tree)
+        # Keyed by id() so a url_open() call nested in a draw() is not reported twice.
+        flagged: Dict[int, ast.Constant] = {}
+        for scope in _ui_string_scopes(mod.tree):
+            for node in ast.walk(scope):
+                if isinstance(node, ast.Constant) and isinstance(node.value, str):
+                    const = node if id(node) not in docstrings else None
+                elif isinstance(node, ast.Name):
+                    const = module_consts.get(node.id)
+                else:
+                    const = None
+                if const is not None and _promo_hits(const.value):
+                    flagged[id(const)] = const
+        for const in sorted(flagged.values(), key=lambda c: (c.lineno, c.col_offset)):
+            hits = ", ".join(_promo_hits(const.value))
+            findings.append(Finding("py.no_promo_links", W, f"promotional/social link ({hits}) reaches the UI - ads and social links are not allowed in the Blender UI (heuristic)", path=mod.rel, line=const.lineno))
     return findings
